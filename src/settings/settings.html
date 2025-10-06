@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="container">
+    <h3>Email Configuration</h3>
+    
+    <form id="settingsForm">
+      <div class="form-group">
+        <label for="subjectInput">Email Subject:</label>
+        <input type="text" id="subjectInput" placeholder="Enter email subject" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="bodyInput">Email Body:</label>
+        <textarea id="bodyInput" placeholder="Enter email body content" required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="attachmentInput">Select Attachment File:</label>
+        <input type="file" id="attachmentInput" accept=".pdf,.doc,.docx,.txt">
+        <div id="fileInfo" class="file-info"></div>
+      </div>
+      
+      <div id="status" class="status" style="display: none;"></div>
+      
+      <div class="button-group">
+        <button type="submit" id="saveBtn" class="primary-btn">Save Settings</button>
+        <button type="button" id="backBtn" class="secondary-btn">Back to Email</button>
+      </div>
+    </form>
+  </div>
+  
+  <script src="../config/environment.js"></script>
+  <script src="../utils/validation.js"></script>
+  <script src="../utils/file-handler.js"></script>
+  <script src="../utils/error-handler.js"></script>
+  <script src="../services/storage.service.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

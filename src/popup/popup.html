@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h3>Email Helper</h3>
+    
+    <input type="email" id="emailInput" placeholder="Enter recipient email" required>
+    
+    <div class="attachment-info" id="attachmentInfo">
+      ⚠️ No file selected - Click Setup to choose file
+    </div>
+    
+    <div class="button-group">
+      <button id="sendEmail" class="primary-btn">Send Email</button>
+      <button id="setupButton" class="secondary-btn">⚙️ Setup</button>
+    </div>
+    
+    <button id="debugButton" class="debug-btn">🐛 Debug Info</button>
+    
+    <div class="preview">
+      <div class="preview-label">Preview:</div>
+      <div><strong>Subject:</strong> <span id="previewSubject">Loading...</span></div>
+      <div><strong>Body:</strong> <span id="previewBody">Loading...</span></div>
+    </div>
+  </div>
+  
+  <script src="../config/environment.js"></script>
+  <script src="../utils/validation.js"></script>
+  <script src="../utils/error-handler.js"></script>
+  <script src="../services/storage.service.js"></script>
+  <script src="../services/auth.service.js"></script>
+  <script src="../services/gmail-api.service.js"></script>
+  <script src="../services/email.service.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

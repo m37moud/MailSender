@@ -1,0 +1,29 @@
+{
+  "name": "gmail-api-email-sender",
+  "version": "3.0.0",
+  "description": "Chrome extension for sending emails via Gmail API with attachments",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "NODE_ENV=development node build.js",
+    "prod": "NODE_ENV=production node build.js",
+    "watch": "nodemon --watch .env --exec \"npm run build\"",
+    "lint": "eslint src/ --ext .js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "chrome-extension",
+    "gmail-api",
+    "email",
+    "automation"
+  ],
+  "author": "Mahmoud Ali",
+  "license": "MIT"
+}
