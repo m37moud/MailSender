@@ -6,9 +6,9 @@
 
 # Generated files (auto-generated from .env and build process)
 config.js
-/popup.html
-/settings.html
-/manifest.json
+popup.html
+settings.html
+manifest.json
 
 # Dependencies
 node_modules/

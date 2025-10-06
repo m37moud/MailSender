@@ -70,82 +70,38 @@ window.ENV_CONFIG = {
 }
 
 /**
- * Copy and process files for Chrome extension
+ * Process HTML files for Chrome extension
  */
-function copyFiles() {
-  // Create directories if they don't exist
-  const dirs = ['config', 'utils', 'services'];
-  dirs.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  });
-
-  // Copy JavaScript files
-  copyDirectory('src/config', 'config');
-  copyDirectory('src/utils', 'utils');
-  copyDirectory('src/services', 'services');
-
-  // Copy CSS files
-  if (fs.existsSync('src/popup/popup.css')) {
-    fs.copyFileSync('src/popup/popup.css', 'popup.css');
-  }
-  if (fs.existsSync('src/settings/settings.css')) {
-    fs.copyFileSync('src/settings/settings.css', 'settings.css');
-  }
-
-  // Copy and process HTML files (update script paths)
+function processHtmlFiles() {
+  // Process HTML files (keep src/ paths but make them work from root)
   processHtmlFile('src/popup/popup.html', 'popup.html');
   processHtmlFile('src/settings/settings.html', 'settings.html');
-
-  // Copy JavaScript controllers
-  if (fs.existsSync('src/popup/popup.js')) {
-    fs.copyFileSync('src/popup/popup.js', 'popup.js');
-  }
-  if (fs.existsSync('src/settings/settings.js')) {
-    fs.copyFileSync('src/settings/settings.js', 'settings.js');
-  }
   
-  console.log('✅ Files copied and processed for Chrome extension');
+  console.log('✅ HTML files processed for Chrome extension');
 }
 
-/**
- * Copy directory recursively
- */
-function copyDirectory(src, dest) {
-  if (!fs.existsSync(src)) return;
-  
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true });
-  }
 
-  const files = fs.readdirSync(src);
-  files.forEach(file => {
-    const srcPath = path.join(src, file);
-    const destPath = path.join(dest, file);
-    
-    if (fs.statSync(srcPath).isDirectory()) {
-      copyDirectory(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  });
-}
 
 /**
- * Process HTML file and update script paths
+ * Process HTML file - keep src/ structure but update paths for root loading
  */
 function processHtmlFile(srcPath, destPath) {
   if (!fs.existsSync(srcPath)) return;
   
   let content = fs.readFileSync(srcPath, 'utf8');
   
-  // Update script paths from relative to absolute
-  content = content.replace(/src="\.\.\//g, 'src="');
-  content = content.replace(/href="\.\.\//g, 'href="');
+  // Keep src/ structure - just remove the ../ since we're loading from root
+  content = content.replace(/src="\.\.\//g, 'src="src/');
+  content = content.replace(/href="\.\.\//g, 'href="src/');
   
-  // Update CSS paths
-  content = content.replace(/href="([^"]+)\.css"/g, 'href="$1.css"');
+  // Fix config.js path (it's generated in root, not src/)
+  content = content.replace(/src="src\/config\.js"/g, 'src="config.js"');
+  
+  // Update local file references to src/
+  content = content.replace(/href="popup\.css"/g, 'href="src/popup/popup.css"');
+  content = content.replace(/href="settings\.css"/g, 'href="src/settings/settings.css"');
+  content = content.replace(/src="popup\.js"/g, 'src="src/popup/popup.js"');
+  content = content.replace(/src="settings\.js"/g, 'src="src/settings/settings.js"');
   
   fs.writeFileSync(destPath, content);
 }
@@ -159,7 +115,7 @@ function build() {
   try {
     buildManifest();
     buildConfig();
-    copyFiles();
+    processHtmlFiles();
     console.log('✅ Build completed successfully!');
   } catch (error) {
     console.error('❌ Build failed:', error.message);
