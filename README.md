@@ -47,11 +47,13 @@ A modern, secure Chrome extension for sending standardized emails with attachmen
 ## 🛠️ Setup
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Configure Environment
+
 ```bash
 # Copy environment template
 cp .env.example .env
@@ -61,6 +63,7 @@ nano .env
 ```
 
 Required environment variables:
+
 - `GOOGLE_CLIENT_ID` - Your Google OAuth Client ID
 - `DEFAULT_SENDER_NAME` - Your name for email signatures
 - `DEFAULT_SENDER_PHONE` - Your phone number for email signatures
@@ -75,11 +78,13 @@ Required environment variables:
 6. Update `.env` with your client ID
 
 ### 4. Build Extension
+
 ```bash
 npm run build
 ```
 
 ### 5. Load in Chrome
+
 1. Open `chrome://extensions/`
 2. Enable "Developer mode"
 3. Click "Load unpacked"
@@ -88,6 +93,7 @@ npm run build
 ## 🔧 Development
 
 ### Available Scripts
+
 ```bash
 npm run build        # Build for production
 npm run dev          # Build for development
@@ -98,18 +104,19 @@ npm test             # Run tests
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | Yes |
-| `EXTENSION_NAME` | Extension display name | No |
-| `EXTENSION_VERSION` | Extension version | No |
-| `DEFAULT_EMAIL_SUBJECT` | Default email subject | No |
-| `DEFAULT_SENDER_NAME` | Default sender name | No |
-| `DEFAULT_SENDER_PHONE` | Default sender phone | No |
+| Variable                | Description            | Required |
+| ----------------------- | ---------------------- | -------- |
+| `GOOGLE_CLIENT_ID`      | Google OAuth Client ID | Yes      |
+| `EXTENSION_NAME`        | Extension display name | No       |
+| `EXTENSION_VERSION`     | Extension version      | No       |
+| `DEFAULT_EMAIL_SUBJECT` | Default email subject  | No       |
+| `DEFAULT_SENDER_NAME`   | Default sender name    | No       |
+| `DEFAULT_SENDER_PHONE`  | Default sender phone   | No       |
 
 ## 📖 Usage
 
 ### First Time Setup
+
 1. Click the extension icon
 2. Click "Authenticate Gmail"
 3. Grant necessary permissions
@@ -118,6 +125,7 @@ npm test             # Run tests
 6. Save settings
 
 ### Sending Emails
+
 1. Click the extension icon
 2. Enter recipient email address
 3. Click "Send Email"
@@ -126,17 +134,20 @@ npm test             # Run tests
 ## 🏗️ Architecture
 
 ### Service Layer
+
 - **AuthService** - Handles Gmail OAuth authentication
 - **GmailApiService** - Manages Gmail API communication
 - **EmailService** - High-level email operations
 - **StorageService** - Chrome storage management
 
 ### Utility Layer
+
 - **Validator** - Input validation and sanitization
 - **FileHandler** - File processing and conversion
 - **ErrorHandler** - Error classification and recovery
 
 ### UI Layer
+
 - **PopupController** - Main interface logic
 - **SettingsController** - Configuration interface logic
 
@@ -153,20 +164,25 @@ npm test             # Run tests
 ### Common Issues
 
 **Authentication Failed**
+
 - Verify your Google Client ID in `.env`
 - Check that Gmail API is enabled
 - Ensure extension ID is added to OAuth settings
 
 **File Too Large**
+
 - Maximum file size is 1MB
 - Compress your file or use a smaller version
 
 **Permission Denied**
+
 - Add yourself as a test user in Google Cloud Console
 - Verify OAuth scopes are correct
 
 ### Debug Information
+
 Click the "🐛 Debug Info" button in the popup to see:
+
 - Authentication status
 - Configuration status
 - Storage usage
@@ -187,6 +203,7 @@ MIT License - see LICENSE file for details
 ## 📞 Support
 
 For issues and questions:
+
 1. Check the troubleshooting section
 2. Review the debug information
 3. Check browser console for errors

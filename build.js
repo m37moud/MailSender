@@ -70,19 +70,84 @@ window.ENV_CONFIG = {
 }
 
 /**
- * Copy files to root for Chrome extension
+ * Copy and process files for Chrome extension
  */
 function copyFiles() {
-  // Copy HTML files to root
-  if (fs.existsSync('src/popup/popup.html')) {
-    fs.copyFileSync('src/popup/popup.html', 'popup.html');
+  // Create directories if they don't exist
+  const dirs = ['config', 'utils', 'services'];
+  dirs.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+
+  // Copy JavaScript files
+  copyDirectory('src/config', 'config');
+  copyDirectory('src/utils', 'utils');
+  copyDirectory('src/services', 'services');
+
+  // Copy CSS files
+  if (fs.existsSync('src/popup/popup.css')) {
+    fs.copyFileSync('src/popup/popup.css', 'popup.css');
+  }
+  if (fs.existsSync('src/settings/settings.css')) {
+    fs.copyFileSync('src/settings/settings.css', 'settings.css');
+  }
+
+  // Copy and process HTML files (update script paths)
+  processHtmlFile('src/popup/popup.html', 'popup.html');
+  processHtmlFile('src/settings/settings.html', 'settings.html');
+
+  // Copy JavaScript controllers
+  if (fs.existsSync('src/popup/popup.js')) {
+    fs.copyFileSync('src/popup/popup.js', 'popup.js');
+  }
+  if (fs.existsSync('src/settings/settings.js')) {
+    fs.copyFileSync('src/settings/settings.js', 'settings.js');
   }
   
-  if (fs.existsSync('src/settings/settings.html')) {
-    fs.copyFileSync('src/settings/settings.html', 'settings.html');
-  }
+  console.log('✅ Files copied and processed for Chrome extension');
+}
+
+/**
+ * Copy directory recursively
+ */
+function copyDirectory(src, dest) {
+  if (!fs.existsSync(src)) return;
   
-  console.log('✅ Files copied to root directory');
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+
+  const files = fs.readdirSync(src);
+  files.forEach(file => {
+    const srcPath = path.join(src, file);
+    const destPath = path.join(dest, file);
+    
+    if (fs.statSync(srcPath).isDirectory()) {
+      copyDirectory(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  });
+}
+
+/**
+ * Process HTML file and update script paths
+ */
+function processHtmlFile(srcPath, destPath) {
+  if (!fs.existsSync(srcPath)) return;
+  
+  let content = fs.readFileSync(srcPath, 'utf8');
+  
+  // Update script paths from relative to absolute
+  content = content.replace(/src="\.\.\//g, 'src="');
+  content = content.replace(/href="\.\.\//g, 'href="');
+  
+  // Update CSS paths
+  content = content.replace(/href="([^"]+)\.css"/g, 'href="$1.css"');
+  
+  fs.writeFileSync(destPath, content);
 }
 
 /**
