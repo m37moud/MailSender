@@ -4,7 +4,8 @@
 class GmailApiService {
   constructor(authService) {
     this.authService = authService;
-    this.apiEndpoint = 'https://www.googleapis.com/gmail/v1/users/me/messages/send';
+    this.apiEndpoint =
+      "https://www.googleapis.com/gmail/v1/users/me/messages/send";
     this.rateLimitDelay = 1000; // 1 second delay for rate limiting
     this.maxRetries = 3;
   }
@@ -19,17 +20,17 @@ class GmailApiService {
     try {
       // Get valid authentication token
       const token = await this.authService.getValidToken();
-      
+
       // Build email message
       const emailMessage = this._buildEmailMessage(emailData, attachments);
-      
+
       // Send via API
       const response = await this._makeApiRequest(token, emailMessage);
-      
+
       return {
         success: true,
         messageId: response.id,
-        threadId: response.threadId
+        threadId: response.threadId,
       };
     } catch (error) {
       return await this._handleApiError(error, emailData, attachments);
@@ -45,41 +46,41 @@ class GmailApiService {
   _buildEmailMessage(emailData, attachments) {
     const boundary = this._generateBoundary();
     const hasAttachments = attachments && attachments.length > 0;
-    
+
     let message = [
       `To: ${emailData.to}`,
       `Subject: ${emailData.subject}`,
-      'MIME-Version: 1.0'
+      "MIME-Version: 1.0",
     ];
 
     if (hasAttachments) {
       message.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
     } else {
-      message.push('Content-Type: text/plain; charset=UTF-8');
+      message.push("Content-Type: text/plain; charset=UTF-8");
     }
 
-    message.push(''); // Empty line after headers
+    message.push(""); // Empty line after headers
 
     if (hasAttachments) {
       // Add text part
       message = message.concat([
         `--${boundary}`,
-        'Content-Type: text/plain; charset=UTF-8',
-        '',
+        "Content-Type: text/plain; charset=UTF-8",
+        "",
         emailData.body,
-        ''
+        "",
       ]);
 
       // Add attachments
-      attachments.forEach(attachment => {
+      attachments.forEach((attachment) => {
         message = message.concat([
           `--${boundary}`,
-          `Content-Type: ${attachment.type || 'application/octet-stream'}`,
+          `Content-Type: ${attachment.type || "application/octet-stream"}`,
           `Content-Disposition: attachment; filename="${attachment.name}"`,
-          'Content-Transfer-Encoding: base64',
-          '',
+          "Content-Transfer-Encoding: base64",
+          "",
           attachment.data,
-          ''
+          "",
         ]);
       });
 
@@ -88,7 +89,7 @@ class GmailApiService {
       message.push(emailData.body);
     }
 
-    return message.join('\r\n');
+    return message.join("\r\n");
   }
 
   /**
@@ -100,24 +101,27 @@ class GmailApiService {
   async _makeApiRequest(token, emailMessage) {
     // Use Unicode-safe base64 encoding
     const encodedMessage = this._unicodeSafeBase64Encode(emailMessage)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
 
     const response = await fetch(this.apiEndpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        raw: encodedMessage
-      })
+        raw: encodedMessage,
+      }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const error = new Error(errorData.error?.message || `API request failed with status ${response.status}`);
+      const error = new Error(
+        errorData.error?.message ||
+          `API request failed with status ${response.status}`
+      );
       error.status = response.status;
       error.response = errorData;
       throw error;
@@ -133,17 +137,25 @@ class GmailApiService {
    */
   _unicodeSafeBase64Encode(str) {
     try {
-      // First encode to UTF-8, then to base64
-      return btoa(unescape(encodeURIComponent(str)));
-    } catch (error) {
-      // Fallback: use TextEncoder for better Unicode support
+      // Use TextEncoder for proper UTF-8 encoding
       const encoder = new TextEncoder();
       const data = encoder.encode(str);
+      
+      // Convert Uint8Array to binary string
       let binary = '';
       for (let i = 0; i < data.length; i++) {
         binary += String.fromCharCode(data[i]);
       }
+      
       return btoa(binary);
+    } catch (error) {
+      // Fallback: try direct btoa (will fail with Unicode but better than nothing)
+      console.warn('Unicode encoding failed, falling back to direct btoa:', error);
+      try {
+        return btoa(str);
+      } catch (btoaError) {
+        throw new Error(`Failed to encode string: ${btoaError.message}`);
+      }
     }
   }
 
@@ -156,11 +168,11 @@ class GmailApiService {
    */
   async _handleApiError(error, emailData, attachments) {
     const errorType = ErrorHandler.classifyError(error);
-    
-    ErrorHandler.logError(error, { 
-      method: '_handleApiError', 
+
+    ErrorHandler.logError(error, {
+      method: "_handleApiError",
       errorType,
-      emailData: { to: emailData.to, subject: emailData.subject }
+      emailData: { to: emailData.to, subject: emailData.subject },
     });
 
     // Handle authentication errors
@@ -195,10 +207,10 @@ class GmailApiService {
    */
   async _handleRateLimit(error, emailData, attachments) {
     const retryAfter = this._extractRetryAfter(error) || this.rateLimitDelay;
-    
+
     console.log(`Rate limited. Retrying after ${retryAfter}ms`);
-    await new Promise(resolve => setTimeout(resolve, retryAfter));
-    
+    await new Promise((resolve) => setTimeout(resolve, retryAfter));
+
     return await this._retryWithBackoff(emailData, attachments, 1);
   }
 
@@ -212,16 +224,18 @@ class GmailApiService {
   async _retryWithBackoff(emailData, attachments, attempt) {
     if (attempt > this.maxRetries) {
       return ErrorHandler.createErrorResponse(
-        new Error('Maximum retry attempts exceeded'),
+        new Error("Maximum retry attempts exceeded"),
         { attempts: attempt }
       );
     }
 
     try {
       const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-      console.log(`Retry attempt ${attempt}/${this.maxRetries} after ${delay}ms`);
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
+      console.log(
+        `Retry attempt ${attempt}/${this.maxRetries} after ${delay}ms`
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
       return await this.sendEmail(emailData, attachments);
     } catch (error) {
       return await this._retryWithBackoff(emailData, attachments, attempt + 1);
@@ -235,7 +249,7 @@ class GmailApiService {
    */
   _extractRetryAfter(error) {
     if (error.response && error.response.headers) {
-      const retryAfter = error.response.headers['retry-after'];
+      const retryAfter = error.response.headers["retry-after"];
       if (retryAfter) {
         return parseInt(retryAfter) * 1000; // Convert seconds to milliseconds
       }
@@ -248,7 +262,7 @@ class GmailApiService {
    * @returns {string} - Boundary string
    */
   _generateBoundary() {
-    return 'boundary_' + Math.random().toString(36).substr(2, 9);
+    return "boundary_" + Math.random().toString(36).substr(2, 9);
   }
 
   /**
@@ -258,17 +272,20 @@ class GmailApiService {
   async validateConnection() {
     try {
       const token = await this.authService.getValidToken();
-      
+
       // Make a simple API call to validate connection
-      const response = await fetch('https://www.googleapis.com/gmail/v1/users/me/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(
+        "https://www.googleapis.com/gmail/v1/users/me/profile",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       return response.ok;
     } catch (error) {
-      ErrorHandler.logError(error, { method: 'validateConnection' });
+      ErrorHandler.logError(error, { method: "validateConnection" });
       return false;
     }
   }
@@ -280,12 +297,15 @@ class GmailApiService {
   async getUserProfile() {
     try {
       const token = await this.authService.getValidToken();
-      
-      const response = await fetch('https://www.googleapis.com/gmail/v1/users/me/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+
+      const response = await fetch(
+        "https://www.googleapis.com/gmail/v1/users/me/profile",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to get user profile: ${response.status}`);
@@ -293,8 +313,10 @@ class GmailApiService {
 
       return await response.json();
     } catch (error) {
-      ErrorHandler.logError(error, { method: 'getUserProfile' });
-      throw new Error('Failed to get user profile: ' + ErrorHandler.getUserMessage(error));
+      ErrorHandler.logError(error, { method: "getUserProfile" });
+      throw new Error(
+        "Failed to get user profile: " + ErrorHandler.getUserMessage(error)
+      );
     }
   }
 
@@ -306,30 +328,30 @@ class GmailApiService {
   async testEmailSending(to) {
     const testEmailData = {
       to: to,
-      subject: 'Test Email from Gmail API Extension',
-      body: 'This is a test email to verify the Gmail API integration is working correctly.'
+      subject: "Test Email from Gmail API Extension",
+      body: "This is a test email to verify the Gmail API integration is working correctly.",
     };
 
     try {
       const result = await this.sendEmail(testEmailData);
       return {
         success: true,
-        message: 'Test email sent successfully',
-        messageId: result.messageId
+        message: "Test email sent successfully",
+        messageId: result.messageId,
       };
     } catch (error) {
       return {
         success: false,
-        message: 'Test email failed: ' + ErrorHandler.getUserMessage(error),
-        error: error
+        message: "Test email failed: " + ErrorHandler.getUserMessage(error),
+        error: error,
       };
     }
   }
 }
 
 // Export for both Node.js and browser environments
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = GmailApiService;
-} else if (typeof window !== 'undefined') {
+} else if (typeof window !== "undefined") {
   window.GmailApiService = GmailApiService;
 }
