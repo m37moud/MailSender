@@ -98,7 +98,8 @@ class GmailApiService {
    * @returns {Promise<Object>} - API response
    */
   async _makeApiRequest(token, emailMessage) {
-    const encodedMessage = btoa(emailMessage)
+    // Use Unicode-safe base64 encoding
+    const encodedMessage = this._unicodeSafeBase64Encode(emailMessage)
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '');
@@ -123,6 +124,27 @@ class GmailApiService {
     }
 
     return await response.json();
+  }
+
+  /**
+   * Unicode-safe base64 encoding
+   * @param {string} str - String to encode
+   * @returns {string} - Base64 encoded string
+   */
+  _unicodeSafeBase64Encode(str) {
+    try {
+      // First encode to UTF-8, then to base64
+      return btoa(unescape(encodeURIComponent(str)));
+    } catch (error) {
+      // Fallback: use TextEncoder for better Unicode support
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      let binary = '';
+      for (let i = 0; i < data.length; i++) {
+        binary += String.fromCharCode(data[i]);
+      }
+      return btoa(binary);
+    }
   }
 
   /**

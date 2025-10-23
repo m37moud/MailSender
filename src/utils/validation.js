@@ -111,6 +111,36 @@ class Validator {
   }
 
   /**
+   * Sanitize email address by converting Unicode characters to ASCII
+   * @param {string} email - Email address to sanitize
+   * @returns {string} - Sanitized email address
+   */
+  static sanitizeEmail(email) {
+    if (!email || typeof email !== 'string') {
+      return '';
+    }
+
+    // Convert common Unicode characters to ASCII equivalents
+    const unicodeMap = {
+      // Mathematical script characters
+      '𝒂': 'a', '𝒃': 'b', '𝒄': 'c', '𝒅': 'd', '𝒆': 'e', '𝒇': 'f', '𝒈': 'g', '𝒉': 'h',
+      '𝒊': 'i', '𝒋': 'j', '𝒌': 'k', '𝒍': 'l', '𝒎': 'm', '𝒏': 'n', '𝒐': 'o', '𝒑': 'p',
+      '𝒒': 'q', '𝒓': 'r', '𝒔': 's', '𝒕': 't', '𝒖': 'u', '𝒗': 'v', '𝒘': 'w', '𝒙': 'x',
+      '𝒚': 'y', '𝒛': 'z',
+      // Add more mappings as needed
+    };
+
+    let sanitized = email.toLowerCase().trim();
+    
+    // Replace Unicode characters with ASCII equivalents
+    for (const [unicode, ascii] of Object.entries(unicodeMap)) {
+      sanitized = sanitized.replace(new RegExp(unicode, 'g'), ascii);
+    }
+
+    return sanitized;
+  }
+
+  /**
    * Sanitize file name
    * @param {string} fileName - File name to sanitize
    * @returns {string} - Sanitized file name

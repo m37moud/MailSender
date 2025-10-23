@@ -178,19 +178,28 @@ Tel: ${envDefaults.senderPhone}`,
    */
   async _handleSendEmail() {
     try {
-      const email = this.elements.emailInput.value.trim();
+      const rawEmail = this.elements.emailInput.value.trim();
 
       // Validate email input
-      if (!email) {
+      if (!rawEmail) {
         this._showToast('Please enter an email address', 'error');
         this.elements.emailInput.focus();
         return;
       }
 
+      // Sanitize email to handle Unicode characters
+      const email = Validator.sanitizeEmail(rawEmail);
+      
       if (!Validator.isValidEmail(email)) {
         this._showToast('Please enter a valid email address', 'error');
         this.elements.emailInput.focus();
         return;
+      }
+
+      // Show user the sanitized email if it's different
+      if (email !== rawEmail) {
+        this._showToast(`Email converted to: ${email}`, 'info');
+        this.elements.emailInput.value = email;
       }
 
       // Check authentication status
@@ -273,10 +282,17 @@ Tel: ${envDefaults.senderPhone}`,
    * Validate email input in real-time
    */
   _validateEmailInput() {
-    const email = this.elements.emailInput.value.trim();
+    const rawEmail = this.elements.emailInput.value.trim();
     
-    if (email && !Validator.isValidEmail(email)) {
-      this.elements.emailInput.style.borderColor = '#ea4335';
+    if (rawEmail) {
+      const sanitizedEmail = Validator.sanitizeEmail(rawEmail);
+      const isValid = Validator.isValidEmail(sanitizedEmail);
+      
+      if (!isValid) {
+        this.elements.emailInput.style.borderColor = '#ea4335';
+      } else {
+        this.elements.emailInput.style.borderColor = '#e8eaed';
+      }
     } else {
       this.elements.emailInput.style.borderColor = '#e8eaed';
     }
